@@ -76,7 +76,7 @@ router.post("/api/login", async (req, res) => {
     });
   }
   //   判断密码是否正确
-  let isPassOk = require("bcrypt").compareSync(pass, user.pass);
+  let isPassOk = require("bcrypt").compareSync(pass, user.pass);    //解密并比对
   if (isPassOk) {
     //   登录成功，生成token
     let token = jwt.sign({ _id: String(user._id) }, SECRET);

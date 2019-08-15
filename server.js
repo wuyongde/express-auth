@@ -9,6 +9,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 
+// 解决跨域
+const cors=require('cors')
+app.use(cors())
+
 // 引路由
 let router=require('./router')
 app.use(router)
