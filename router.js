@@ -1,15 +1,20 @@
+// 路由模块
+
 const express = require("express");
-const router = express.Router();
+const router = express.Router(); //创建路由
 
 // 引入数据模型
 const { UserModel } = require("./models");
 
-// 引入jsonwebtoken
+// 引入jsonwebtoken---生成token
 const jwt = require("jsonwebtoken");
 const SECRET = "hello world"; //密钥
 
+// 写业务时：业务流程的梳理非常重要！！！，代码是根据业务流程来写的~
+
 // 注册
 router.post("/api/register", async (req, res) => {
+  //注意async await的用法！
   let { name, pass } = req.body;
   // 判断是否name和pass都传了
   if (!name || !pass) {
@@ -20,6 +25,7 @@ router.post("/api/register", async (req, res) => {
   }
   // 此处，说明name与pass都上传了,保存数据
   try {
+    //try...catch...是配合async...await使用的错误处理代码。。
     const user = await UserModel.create({
       name,
       pass
@@ -76,7 +82,7 @@ router.post("/api/login", async (req, res) => {
     });
   }
   //   判断密码是否正确
-  let isPassOk = require("bcrypt").compareSync(pass, user.pass);    //解密并比对
+  let isPassOk = require("bcrypt").compareSync(pass, user.pass); //解密并比对
   if (isPassOk) {
     //   登录成功，生成token
     let token = jwt.sign({ _id: String(user._id) }, SECRET);
@@ -84,7 +90,7 @@ router.post("/api/login", async (req, res) => {
       code: 0,
       msg: "登录成功",
       user,
-      token
+      token //响应数据中，带上token，以便前端收到后保存到本地localStorage或其它地方，后续访问其它页面资源时带上用以验证！！！
     });
   } else {
     res.json({
@@ -100,7 +106,8 @@ router.get("/api/profile", (req, res) => {
   // 解码
   jwt.verify(token, SECRET, (err, data) => {
     if (err) {
-     return res.json({
+      return res.json({
+        //token不正确，通常前端收到此响应后应做其它操作：如跳转到登录页。。。
         code: -1,
         msg: "token不正确，请重新登录"
       });
@@ -113,7 +120,7 @@ router.get("/api/profile", (req, res) => {
         res.json({
           code: 0,
           msg: "找到用户，你已登录",
-          data
+          data //通常，前端到收到响应后，会重新用用户数据渲染当前页面。。。
         });
       })
       .catch(err => {
@@ -125,4 +132,5 @@ router.get("/api/profile", (req, res) => {
   });
 });
 
+// 导出路由
 module.exports = router;
