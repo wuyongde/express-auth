@@ -46,20 +46,61 @@ router.post("/api/register", async (req, res) => {
 
 // 查询所有用户
 router.get("/api/users", async (req, res) => {
+  let users;
   try {
-    const users = await UserModel.find();
-    res.json({
-      code: 0,
-      msg: "查询成功",
-      data: users
-    });
+    //try里面只放可能出错的异步代码即可，其它代码不必放！
+    users = await UserModel.find();
   } catch (error) {
-    res.json({
+    return res.json({
       code: -2,
       msg: "查询失败",
       err: error
     });
   }
+  // 查询成功，返回数据
+  res.set("Content-Type", "application/json");
+  res.json({
+    code: 0,
+    msg: "查询成功",
+    data: users
+  });
+});
+
+// 删除用户(通过_id删除)
+router.post("/api/del", async (req, res) => {
+  let { _id } = req.body;
+  if (!_id) {
+    return res.json({
+      code: -1,
+      msg: "未提供_id"
+    });
+  }
+  // 查_id并删除
+  let user;
+  try {
+    user = await UserModel.findByIdAndRemove(
+      { _id },
+      { useFindAndModify: false }
+    );
+  } catch (error) {
+    return res.json({
+      code: -3,
+      msg: `数据库错误：${error}`
+    });
+  }
+
+  if (!user) {
+    return res.json({
+      code: -2,
+      msg: "未找到用户"
+    });
+  }
+  // 删除成功
+  res.json({
+    code: 0,
+    msg: "用户已删除",
+    user
+  });
 });
 
 // 登录
